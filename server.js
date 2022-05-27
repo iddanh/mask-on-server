@@ -22,34 +22,27 @@ wss.on('connection', function connection(ws) {
 
     ws.on('message', function message(data) {
         // Write img to disk
-        const fileName = 'data.jpg';
-        fs.writeFileSync(fileName, Buffer.from(data.toString().split(",")[1], 'base64'));
+        // const fileName = 'data.jpg';
+        // fs.writeFileSync(fileName, Buffer.from(data.toString().split(",")[1], 'base64'));
 
-            // Send filename to python script
-            pyshell.send(`${fileName}\n`);
+        const stringData = data.toString().split(",")[1];
+
+        // Send filename to python script
+        pyshell.send(`${stringData}\n`);
     });
 
-    pyshell.on('message', function (fileName) {
-        try{
-            // read binary data
-            const bitmap = fs.readFileSync(fileName);
-            // convert binary data to base64 encoded string
-            const data = Buffer.from(bitmap).toString('base64');
+    pyshell.on('message', function (data) {
+        try {
             
-            ws.send(data);
-        } catch(e){
+            if (data === '<class \'cv2.error\'>') {
+                return;
+            }
+
+            ws.send(data.substring(2, data.length - 1));
+        } catch(e) {
             console.log('Got error from pythong', fileName);
         }
     });
-
-    // // end the input stream and allow the process to exit
-    // pyshell.end(function (err) {
-    //     if (err){
-    //         console.log(err);
-    //     };
-
-    //     console.log('finished');
-    // });
 });
 
 server.listen(10151);

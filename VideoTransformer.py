@@ -1,3 +1,4 @@
+import base64
 import sys
 import cv2
 import os
@@ -81,12 +82,20 @@ def main():
     my_video_transformer = VideoTransformer()
     while (True):   
         try: 
-            fileName = input()
-            frame = cv2.imread(fileName)
+            # fileName = input()
+            # frame = cv2.imread(fileName)
+
+            data = input();
+            img = base64.b64decode(data)
+            npimg = np.fromstring(img, dtype=np.uint8)
+            frame = cv2.imdecode(npimg, 1)
 
             tagged_frame = my_video_transformer.transform(frame)
-            cv2.imwrite('tagged.jpg', tagged_frame)
-            print('tagged.jpg')
+            _, im_arr = cv2.imencode('.jpg', tagged_frame)
+            im_bytes = im_arr.tobytes()
+            im_b64 = base64.b64encode(im_bytes)
+            # cv2.imwrite('tagged.jpg', tagged_frame)
+            print(im_b64)
         except:
             print(sys.exc_info()[0])
             

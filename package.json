@@ -5,8 +5,7 @@
     "main": "server.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
-        "start": "node test_server.js",
-        "client": "node client.js"
+        "start": "node server.js"
     },
     "author": "",
     "license": "ISC",
