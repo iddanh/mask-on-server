@@ -1,0 +1,18 @@
+{
+    "name": "mask-on-server",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "node test_server.js",
+        "client": "node client.js"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "python-shell": "^3.0.1",
+        "ssl-root-cas": "^1.3.1",
+        "ws": "^8.5.0"
+    }
+}
