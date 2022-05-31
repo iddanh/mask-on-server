@@ -1,7 +1,3 @@
-// const rootCas =  require('ssl-root-cas').create();
-// rootCas.addFile(__dirname + '/cert/intermediate.pem');
-// require('https').globalAgent.options.ca = rootCas;
-
 const { WebSocketServer } = require('ws');
 const https = require('https');
 const fs = require("fs");
@@ -21,10 +17,7 @@ wss.on('connection', function connection(ws) {
     const pyshell = new PythonShell('VideoTransformer.py');
 
     ws.on('message', function message(data) {
-        // Write img to disk
-        // const fileName = 'data.jpg';
-        // fs.writeFileSync(fileName, Buffer.from(data.toString().split(",")[1], 'base64'));
-
+        // Convert to string
         const stringData = data.toString().split(",")[1];
 
         // Send filename to python script
@@ -34,13 +27,15 @@ wss.on('connection', function connection(ws) {
     pyshell.on('message', function (data) {
         try {
             
+            // Skip errors
             if (data === '<class \'cv2.error\'>') {
                 return;
             }
 
+            // Remove unneeded chars and send to client
             ws.send(data.substring(2, data.length - 1));
         } catch(e) {
-            console.log('Got error from pythong', fileName);
+            console.log('Got error from python', fileName);
         }
     });
 });
