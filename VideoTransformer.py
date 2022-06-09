@@ -3,21 +3,22 @@ import sys
 import cv2
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3' 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import numpy as np
 from imutils import paths
 from pathlib import Path
 import matplotlib.pyplot as plt
 from PIL import Image, ImageEnhance
-from keras.models import load_model
-from keras.preprocessing.image import img_to_array
+from tensorflow.keras.utils import img_to_array
+
 from keras.applications.mobilenet_v2 import preprocess_input
 import tensorflow as tf
+from keras.models import load_model
 
 
 class VideoTransformer():
-    
+
     def detect_and_predict_mask(self, frame1, net, model):
         # grab the dimensions of the frame and then construct a blob
         (h, w) = frame1.shape[:2]
@@ -46,7 +47,7 @@ class VideoTransformer():
                 # extract the face ROI, convert it from BGR to RGB channel, resize it to 224,224 and preprocess it
                 face = frame1[startY:endY, startX:endX]
                 face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
-                face = cv2.resize(face, (96, 96))
+                face = cv2.resize(face, (128, 128))
                 face = img_to_array(face)
                 face = preprocess_input(face)
 
@@ -61,44 +62,64 @@ class VideoTransformer():
         return (locations, predictions)
 
     def transform(self, frame):
-        #img = frame.to_ndarray(format="bgr24")
+        # img = frame.to_ndarray(format="bgr24")
         prototxtPath = 'config/deploy.prototxt.txt'
         weightsPath = 'config/res10_300x300_weights.caffemodel'
         net = cv2.dnn.readNet(weightsPath, prototxtPath)
-        model = load_model(r'config/model/model.h5')
+        model = load_model(r'config/model/model-c.h5')
         (locs, preds) = self.detect_and_predict_mask(frame, net, model)
         for (box, pred) in zip(locs, preds):
             (startX, startY, endX, endY) = box
-            (mask, withoutMask) = pred
-            label = 'Mask' if mask > withoutMask else 'No Mask'
-            color = (0, 255, 0) if label == 'Mask' else (0, 0, 210)
-            # include the probability in the label
-            label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
+            (mask, withoutMask, no_face, half) = pred
+            max_pred = max(pred)
+
+            if no_face == max_pred:
+                continue
+
+            if mask == max_pred:
+                label = "MASK-ON"
+                color = (0, 255, 0)
+            elif withoutMask == max_pred:
+                label = "MASK-OFF"
+                color = (0, 0, 210)
+            else:
+                label = "MASK-MIDDLE"
+                color = (255, 165, 0)
+
+            # label = 'Mask' if mask > withoutMask else 'No Mask'
+            # color = (0, 255, 0) if label == 'Mask' else (0, 0, 210)
+            # # include the probability in the label
+            # label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
             frame = cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
             frame = cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
         return frame
 
+
 def main():
     my_video_transformer = VideoTransformer()
-    while (True):   
-        try: 
+    while (True):
+        try:
+            # print("p:")
             # fileName = input()
             # frame = cv2.imread(fileName)
 
-            data = input();
+            data = input()
+
             img = base64.b64decode(data)
             npimg = np.fromstring(img, dtype=np.uint8)
             frame = cv2.imdecode(npimg, 1)
 
             tagged_frame = my_video_transformer.transform(frame)
+
             _, im_arr = cv2.imencode('.jpg', tagged_frame)
             im_bytes = im_arr.tobytes()
             im_b64 = base64.b64encode(im_bytes)
-            # cv2.imwrite('tagged.jpg', tagged_frame)
             print(im_b64)
+
+            # cv2.imwrite('tagged.jpg', tagged_frame)
         except:
             print(sys.exc_info()[0])
-            
+
 
 # Start process
 if __name__ == '__main__':

@@ -1,9 +1,9 @@
 const { WebSocketServer } = require('ws');
-const https = require('https');
+const http = require('http');
 const fs = require("fs");
 const { PythonShell } = require('python-shell');
 
-server = https.createServer({
+server = http.createServer({
     pfx: fs.readFileSync('./cert/CSSTUD.pfx'),
     passphrase: 'Bamba@CS22'
 })
@@ -19,7 +19,6 @@ wss.on('connection', function connection(ws) {
     ws.on('message', function message(data) {
         // Convert to string
         const stringData = data.toString().split(",")[1];
-
         // Send filename to python script
         pyshell.send(`${stringData}\n`);
     });
