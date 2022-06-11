@@ -73,18 +73,18 @@ class VideoTransformer():
             (mask, withoutMask, no_face, half) = pred
             max_pred = max(pred)
 
-            if no_face == max_pred:
-                continue
+            # if no_face == max_pred:
+            #     continue
 
             if mask == max_pred:
                 label = "MASK-ON"
-                color = (0, 255, 0)
-            elif withoutMask == max_pred:
+                color = (117, 182, 70)
+            elif withoutMask == max_pred or no_face == max_pred:
                 label = "MASK-OFF"
-                color = (0, 0, 210)
+                color = (97, 95, 232)
             else:
-                label = "MASK-MIDDLE"
-                color = (255, 165, 0)
+                label = "MASK-HALF"
+                color = (110, 191, 249)
 
             # label = 'Mask' if mask > withoutMask else 'No Mask'
             # color = (0, 255, 0) if label == 'Mask' else (0, 0, 210)

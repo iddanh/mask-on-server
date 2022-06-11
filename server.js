@@ -1,9 +1,9 @@
 const { WebSocketServer } = require('ws');
-const http = require('http');
+const https = require('https');
 const fs = require("fs");
 const { PythonShell } = require('python-shell');
 
-server = http.createServer({
+server = https.createServer({
     pfx: fs.readFileSync('./cert/CSSTUD.pfx'),
     passphrase: 'Bamba@CS22'
 })
