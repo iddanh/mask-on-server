@@ -31,8 +31,8 @@ wss.on('connection', function connection(ws) {
                 return;
             }
 
-            // Remove unneeded chars and send to client
-            ws.send(data.substring(2, data.length - 1));
+            // Send to client
+            ws.send(data);
         } catch(e) {
             console.log('Got error from python', fileName);
         }

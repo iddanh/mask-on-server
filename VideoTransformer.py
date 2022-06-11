@@ -68,6 +68,7 @@ class VideoTransformer():
         net = cv2.dnn.readNet(weightsPath, prototxtPath)
         model = load_model(r'config/model/model-c.h5')
         (locs, preds) = self.detect_and_predict_mask(frame, net, model)
+        predictions = [0, 0, 0]
         for (box, pred) in zip(locs, preds):
             (startX, startY, endX, endY) = box
             (mask, withoutMask, no_face, half) = pred
@@ -79,12 +80,15 @@ class VideoTransformer():
             if mask == max_pred:
                 label = "MASK-ON"
                 color = (117, 182, 70)
+                predictions[0] += 1
             elif withoutMask == max_pred or no_face == max_pred:
                 label = "MASK-OFF"
                 color = (97, 95, 232)
+                predictions[2] += 1
             else:
                 label = "MASK-HALF"
                 color = (110, 191, 249)
+                predictions[1] += 1
 
             # label = 'Mask' if mask > withoutMask else 'No Mask'
             # color = (0, 255, 0) if label == 'Mask' else (0, 0, 210)
@@ -92,7 +96,7 @@ class VideoTransformer():
             # label = "{}: {:.2f}%".format(label, max(mask, withoutMask) * 100)
             frame = cv2.putText(frame, label, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.45, color, 2)
             frame = cv2.rectangle(frame, (startX, startY), (endX, endY), color, 2)
-        return frame
+        return (frame, predictions)
 
 
 def main():
@@ -109,12 +113,12 @@ def main():
             npimg = np.fromstring(img, dtype=np.uint8)
             frame = cv2.imdecode(npimg, 1)
 
-            tagged_frame = my_video_transformer.transform(frame)
+            (tagged_frame, preds) = my_video_transformer.transform(frame)
 
             _, im_arr = cv2.imencode('.jpg', tagged_frame)
             im_bytes = im_arr.tobytes()
             im_b64 = base64.b64encode(im_bytes)
-            print(im_b64)
+            print(f'{im_b64}|{preds}')
 
             # cv2.imwrite('tagged.jpg', tagged_frame)
         except:
