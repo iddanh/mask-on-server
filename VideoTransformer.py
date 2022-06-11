@@ -112,6 +112,7 @@ def main():
             img = base64.b64decode(data)
             npimg = np.fromstring(img, dtype=np.uint8)
             frame = cv2.imdecode(npimg, 1)
+            frame = cv2.flip(frame, 1)
 
             (tagged_frame, preds) = my_video_transformer.transform(frame)
 
