@@ -66,7 +66,7 @@ class VideoTransformer():
         prototxtPath = 'config/deploy.prototxt.txt'
         weightsPath = 'config/res10_300x300_weights.caffemodel'
         net = cv2.dnn.readNet(weightsPath, prototxtPath)
-        model = load_model(r'config/model/model-c.h5')
+        model = load_model(r'config/model/model-d.h5')
         (locs, preds) = self.detect_and_predict_mask(frame, net, model)
         predictions = [0, 0, 0]
         for (box, pred) in zip(locs, preds):
